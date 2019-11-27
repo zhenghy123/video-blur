@@ -1,27 +1,13 @@
 <template>
   <div class="vue-cropper" ref="cropper" @mouseover="scaleImg" @mouseout="cancelScale">
-    <!-- <div class="cropper-box">
-      <div
-        class="cropper-box-canvas"
-        v-show="!loading"
-        :style="{
-					'width': trueWidth + 'px',
-					'height': trueHeight + 'px',
-					'transform': 'scale(' + scale + ',' + scale + ') ' + 'translate3d('+ x / scale + 'px,' + y / scale + 'px,' + '0)'
-					+ 'rotateZ('+ rotate * 90 +'deg)'
-					}"
-      >
-        <img :src="imgs" alt="cropper-img" ref="cropperImg">
-      </div>
-    </div>-->
     <div
       class="cropper-drag-box"
       :class="{'cropper-move': move && !crop, 'cropper-crop': crop, 'cropper-modal': cropping}"
       @mousedown="startMove"
       @touchstart="startMove"
     ></div>
+    <!--   v-show="cropping" -->
     <div
-      v-show="cropping"
       class="cropper-crop-box"
       :style="{
 					'width': cropW + 'px',
@@ -29,25 +15,14 @@
 					'transform': 'translate3d('+ cropOffsertX + 'px,' + cropOffsertY + 'px,' + '0)'
 				}"
     >
-      <span class="cropper-view-box">
-        <img
-          :style="{
-						'width': trueWidth + 'px',
-						'height': trueHeight + 'px',
-						'transform': 'scale(' + scale + ',' + scale + ') ' + 'translate3d('+ (x - cropOffsertX) / scale  + 'px,' + (y - cropOffsertY) / scale + 'px,' + '0)'
-						+ 'rotateZ('+ rotate * 90 +'deg)'
-						}"
-          :src="imgs"
-          alt="cropper-img"
-        />
-      </span>
-      <span class="cropper-face cropper-move" @mousedown="cropMove" @touchstart="cropMove"></span>
-      <span
+      <!-- <span class="cropper-face cropper-move" @mousedown="cropMove" @touchstart="cropMove"></span> -->
+      <!-- <span
         class="crop-info"
         v-if="info"
-        :style="{'top': cropInfo.top}"
-      >{{ this.cropInfo.width }} × {{ this.cropInfo.height }}</span>
-      <span v-if="!fixedBox">
+      :style="{'top': cropInfo.top}"-->
+      <!-- >{{ this.cropInfo.width }} × {{ this.cropInfo.height }}</span> -->
+      <!--  v-if="!fixedBox" -->
+      <span>
         <span
           class="crop-line line-w"
           @mousedown="changeCropSize($event, false, true, 0, 1)"
@@ -116,7 +91,7 @@
 <script lang="ts">
 import { Component, Prop, Vue, Provide, Watch } from 'vue-property-decorator'
 import Cropper from './cropper-box/vue-cropper.vue'
-import exifmin from './cropper-box/exif-js-min.ts'
+import exifmin from './cropper-box/exif-js-min'
 
 @Component({
   components: { Cropper }
@@ -262,10 +237,10 @@ export default class CropperBox extends Vue {
   // 开启截图
   crop: any = false
   // 正在截图
-  cropping: any = false
+  cropping: any = true
   // 裁剪框大小
-  cropW: any = 0
-  cropH: any = 0
+  cropW: any = 96
+  cropH: any = 50
   cropOldW: any = 0
   cropOldH: any = 0
   // 判断是否能够改变
@@ -303,31 +278,31 @@ export default class CropperBox extends Vue {
   /**
    * computed
    */
-  get cropInfo(): any {
-    let _this = this as any
-    let obj: any = {}
-    obj.top = this.cropOffsertY > 21 ? '-21px' : '0px'
-    obj.width = this.cropW > 0 ? this.cropW : 0
-    obj.height = this.cropH > 0 ? this.cropH : 0
-    if (this.infoTrue) {
-      let dpr = 1
-      if (this.high && !this.full) {
-        dpr = window.devicePixelRatio
-      }
-      if (_this.enlarge !== 1 && !this.full) {
-        dpr = Math.abs(Number(this.enlarge))
-      }
-      obj.width = obj.width * dpr
-      obj.height = obj.height * dpr
-      if (this.full) {
-        obj.width = obj.width / this.scale
-        obj.height = obj.height / this.scale
-      }
-    }
-    obj.width = obj.width.toFixed(0)
-    obj.height = obj.height.toFixed(0)
-    return obj
-  }
+  // get cropInfo(): any {
+  //   let _this = this as any
+  //   let obj: any = {}
+  //   obj.top = this.cropOffsertY > 21 ? '-21px' : '0px'
+  //   obj.width = this.cropW > 0 ? this.cropW : 0
+  //   obj.height = this.cropH > 0 ? this.cropH : 0
+  //   if (this.infoTrue) {
+  //     let dpr = 1
+  //     if (this.high && !this.full) {
+  //       dpr = window.devicePixelRatio
+  //     }
+  //     if (_this.enlarge !== 1 && !this.full) {
+  //       dpr = Math.abs(Number(this.enlarge))
+  //     }
+  //     obj.width = obj.width * dpr
+  //     obj.height = obj.height * dpr
+  //     if (this.full) {
+  //       obj.width = obj.width / this.scale
+  //       obj.height = obj.height / this.scale
+  //     }
+  //   }
+  //   obj.width = obj.width.toFixed(0)
+  //   obj.height = obj.height.toFixed(0)
+  //   return obj
+  // }
 
   get isIE() {
     var userAgent = navigator.userAgent //取得浏览器的userAgent字符串
@@ -575,7 +550,8 @@ export default class CropperBox extends Vue {
     }
 
     // 判断如果不是base64图片 再添加crossOrigin属性，否则会导致iOS低版本(10.2)无法显示图片
-    if (this.img.substr(0, 4) !== 'data') {
+    console.error(this.img)
+    if (this.img && this.img.substr(0, 4) !== 'data') {
       img.crossOrigin = ''
     }
 
@@ -812,11 +788,11 @@ export default class CropperBox extends Vue {
   }
   // 缩放图片
   scaleImg() {
-    if (this.canScale) {
-      window.addEventListener(this.support, this.changeSize, {
-        passive: false
-      })
-    }
+    // if (this.canScale) {
+    //   window.addEventListener(this.support, this.changeSize, {
+    //     passive: false
+    //   })
+    // }
   }
   // 移出框
   cancelScale() {
@@ -1804,8 +1780,239 @@ export default class CropperBox extends Vue {
 </script>
 
 <style lang="scss">
-.cropper-box {
-  height: 100%;
-  width: 100%;
+// .vue-cropper {
+//   position: absolute;
+
+.vue-cropper {
+  position: absolute;
+  // width: 100%;
+  // height: 100%;
+  // box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  direction: ltr;
+  touch-action: none;
+  text-align: left;
+  // background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAAA3NCSVQICAjb4U/gAAAABlBMVEXMzMz////TjRV2AAAACXBIWXMAAArrAAAK6wGCiw1aAAAAHHRFWHRTb2Z0d2FyZQBBZG9iZSBGaXJld29ya3MgQ1M26LyyjAAAABFJREFUCJlj+M/AgBVhF/0PAH6/D/HkDxOGAAAAAElFTkSuQmCC');
 }
+
+.cropper-box,
+.cropper-box-canvas,
+.cropper-drag-box,
+.cropper-crop-box,
+.cropper-face {
+  position: absolute;
+  // top: 0;
+  // right: 0;
+  // bottom: 0;
+  // left: 0;
+  user-select: none;
+}
+
+.cropper-box-canvas img {
+  position: relative;
+  text-align: left;
+  user-select: none;
+  transform: none;
+  max-width: none;
+  max-height: none;
+}
+
+.cropper-box {
+  overflow: hidden;
+}
+
+.cropper-move {
+  cursor: move;
+}
+
+.cropper-crop {
+  cursor: crosshair;
+}
+
+.cropper-modal {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.cropper-crop-box {
+  /*border: 2px solid #39f;*/
+}
+
+.cropper-view-box {
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  outline: 1px solid #39f;
+  outline-color: rgba(51, 153, 255, 0.75);
+  user-select: none;
+}
+
+.cropper-view-box img {
+  user-select: none;
+  text-align: left;
+  max-width: none;
+  max-height: none;
+}
+
+.cropper-face {
+  top: 0;
+  left: 0;
+  background-color: #fff;
+  opacity: 0.1;
+}
+
+.crop-info {
+  position: absolute;
+  left: 0px;
+  min-width: 65px;
+  text-align: center;
+  color: white;
+  line-height: 20px;
+  background-color: rgba(0, 0, 0, 0.8);
+  font-size: 12px;
+}
+
+.crop-line {
+  position: absolute;
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0.1;
+}
+
+.line-w {
+  top: -3px;
+  left: 0;
+  height: 5px;
+  cursor: n-resize;
+}
+
+.line-a {
+  top: 0;
+  left: -3px;
+  width: 5px;
+  cursor: w-resize;
+}
+
+.line-s {
+  bottom: -3px;
+  left: 0;
+  height: 5px;
+  cursor: s-resize;
+}
+
+.line-d {
+  top: 0;
+  right: -3px;
+  width: 5px;
+  cursor: e-resize;
+}
+
+.crop-point {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  opacity: 0.75;
+  background-color: #39f;
+  border-radius: 100%;
+}
+
+.point1 {
+  top: -4px;
+  left: -4px;
+  cursor: nw-resize;
+}
+
+.point2 {
+  top: -5px;
+  left: 50%;
+  margin-left: -3px;
+  cursor: n-resize;
+}
+
+.point3 {
+  top: -4px;
+  right: -4px;
+  cursor: ne-resize;
+}
+
+.point4 {
+  top: 50%;
+  left: -4px;
+  margin-top: -3px;
+  cursor: w-resize;
+}
+
+.point5 {
+  top: 50%;
+  right: -4px;
+  margin-top: -3px;
+  cursor: e-resize;
+}
+
+.point6 {
+  bottom: -5px;
+  left: -4px;
+  cursor: sw-resize;
+}
+
+.point7 {
+  bottom: -5px;
+  left: 50%;
+  margin-left: -3px;
+  cursor: s-resize;
+}
+
+.point8 {
+  bottom: -5px;
+  right: -4px;
+  cursor: se-resize;
+}
+
+@media screen and (max-width: 500px) {
+  .crop-point {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    opacity: 0.45;
+    background-color: #39f;
+    border-radius: 100%;
+  }
+
+  .point1 {
+    top: -10px;
+    left: -10px;
+  }
+
+  .point2,
+  .point4,
+  .point5,
+  .point7 {
+    display: none;
+  }
+
+  .point3 {
+    top: -10px;
+    right: -10px;
+  }
+
+  .point4 {
+    top: 0;
+    left: 0;
+  }
+
+  .point6 {
+    bottom: -10px;
+    left: -10px;
+  }
+
+  .point8 {
+    bottom: -10px;
+    right: -10px;
+  }
+}
+// }
 </style>

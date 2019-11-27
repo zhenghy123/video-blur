@@ -1,5 +1,14 @@
 <template>
-  <div class="vue-cropper" ref="cropper" @mouseover="scaleImg" @mouseout="cancelScale">
+  <div
+    class="cropper-crop-box"
+    ref="cropper"
+    :style="{
+					'width': w + 'px',
+					'height': h + 'px',
+				}"
+    @mouseover="scaleImg"
+    @mouseout="cancelScale"
+  >
     <div class="cropper-box">
       <div
         class="cropper-box-canvas"
@@ -30,7 +39,9 @@
 				}"
     >
       <span class="cropper-view-box">
-        <img
+        <slot name="canvas"></slot>
+        <!-- <canvas id="webgl" width="500" height="300" style="background-color:#eee"></canvas> -->
+        <!-- <img
           :style="{
 						'width': trueWidth + 'px',
 						'height': trueHeight + 'px',
@@ -39,14 +50,14 @@
 						}"
           :src="imgs"
           alt="cropper-img"
-        />
+        />-->
       </span>
       <span class="cropper-face cropper-move" @mousedown="cropMove" @touchstart="cropMove"></span>
-      <span
+      <!-- <span
         class="crop-info"
         v-if="info"
         :style="{'top': cropInfo.top}"
-      >{{ this.cropInfo.width }} × {{ this.cropInfo.height }}</span>
+      >{{ this.cropInfo.width }} × {{ this.cropInfo.height }}</span>-->
       <span v-if="!fixedBox">
         <span
           class="crop-line line-w"
@@ -114,7 +125,7 @@
 </template>
 
 <script>
-import exifmin from "./exif-js-min";
+import exifmin from "./cropper-box/exif-js-min";
 
 export default {
   data: function () {
@@ -142,10 +153,10 @@ export default {
       // 开启截图
       crop: false,
       // 正在截图
-      cropping: false,
+      cropping: true,
       // 裁剪框大小
-      cropW: 0,
-      cropH: 0,
+      cropW: 90,
+      cropH: 50,
       cropOldW: 0,
       cropOldH: 0,
       // 判断是否能够改变
@@ -297,6 +308,9 @@ export default {
       default: "contain"
     }
   },
+  // mounted() {
+
+  // },
   computed: {
     cropInfo () {
       let obj = {};
@@ -1748,6 +1762,11 @@ export default {
     }
   },
   mounted () {
+    var canvas = document.getElementById('webgl')
+    this.w = canvas.width
+    this.h = canvas.height
+
+
     this.support =
       "onwheel" in document.createElement("div")
         ? "wheel"
@@ -1785,7 +1804,7 @@ export default {
 
 <style scoped lang="css">
 .vue-cropper {
-  position: relative;
+  position: absolute;
   width: 100%;
   height: 100%;
   box-sizing: border-box;

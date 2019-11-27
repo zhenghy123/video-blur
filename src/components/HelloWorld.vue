@@ -2,8 +2,10 @@
   <div class="hello">
     <!--canvas标签创建一个宽高均为500像素，背景为蓝色的矩形画布-->
     <div class="video-out-container">
-      <canvas id="webgl" width="500" height="300" style="background-color:#eee"></canvas>
-      <CropperBox></CropperBox>
+      <canvas slot="canvas" id="webgl1" width="500" height="300" style="background-color:#eee"></canvas>
+      <MyBox>
+        <canvas slot="canvas" id="webgl" width="500" height="300" style="background-color:#eee"></canvas>
+      </MyBox>
     </div>
     <button @click="videoPlay()">播放</button>
     <!-- <video ref="video" src="../static/v1.mp4" controls></video> -->
@@ -12,10 +14,10 @@
 
 <script lang="ts">
 import { Component, Prop, Vue, Provide } from 'vue-property-decorator'
-import CropperBox from './CropperBox.vue'
+import MyBox from './MyBox.vue'
 
 @Component({
-  components: { CropperBox }
+  components: { MyBox }
 })
 export default class HelloWorld extends Vue {
   @Provide() private video: any
@@ -30,7 +32,7 @@ export default class HelloWorld extends Vue {
     this.video.play()
   }
   initVideo() {
-    var canvas: any = document.getElementById('webgl')
+    var canvas: any = document.getElementById('webgl1')
     var gl = canvas.getContext('webgl')
 
     // var x = document.createElement('VIDEO')
