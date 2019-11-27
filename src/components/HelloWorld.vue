@@ -2,12 +2,12 @@
   <div class="hello">
     <!--canvas标签创建一个宽高均为500像素，背景为蓝色的矩形画布-->
     <div class="video-out-container">
-      <canvas slot="canvas" id="webgl1" width="500" height="300" style="background-color:#eee"></canvas>
+      <!-- <canvas slot="canvas" id="webgl1" width="500" height="300" style="background-color:#eee"></canvas> -->
       <MyBox>
         <canvas slot="canvas" id="webgl" width="500" height="300" style="background-color:#eee"></canvas>
       </MyBox>
     </div>
-    <button @click="videoPlay()">播放</button>
+    <!-- <button @click="videoPlay()">播放</button> -->
     <!-- <video ref="video" src="../static/v1.mp4" controls></video> -->
   </div>
 </template>
@@ -21,49 +21,41 @@ import MyBox from './MyBox.vue'
 })
 export default class HelloWorld extends Vue {
   @Provide() private video: any
+  videoready: boolean = false
 
   mounted() {
-    this.initVideo()
+    // this.initVideo()
   }
 
   videoPlay() {
     console.log(this.video)
-
     this.video.play()
   }
   initVideo() {
+    let _this = this
     var canvas: any = document.getElementById('webgl1')
     var gl = canvas.getContext('webgl')
 
-    // var x = document.createElement('VIDEO')
-    // x.setAttribute('controls', 'controls')
-    // x.setAttribute('src', require('../static/v1.mp4'))
-    // ;(document.getElementById('app') as any).firstChild.appendChild(x)
-
     // 创建视频
     var video: any = document.createElement('video')
-    // var video: any = this.$refs.video
-
-    var videoready = false
-    // video.loop = true
     video.oncanplay = function() {
       console.log('video can play')
-      videoready = true
+      _this.videoready = true
+      _this.initVideoCanvas()
     }
     video.onerror = function(e: any) {
       console.log('video error', e)
     }
     // video.crossOrigin = 'anonymous'
-    video.src = require('../static/v1.mp4')
+    video.src = require('../static/11.mp4')
     video.controls = true
-    // video.setAttribute('src', './v1.mp4')
-    // video.autoplay = 'autoplay'
-    // video.setAttribute()
-    // video.setAttribute('autoplay', 'autoplay')
-    // video.setAttribute('playsinline', '')
-    // video.setAttribute('webkit-playsinline', '')
-    this.video = video
-    // document.body.appendChild(video)
+    _this.video = video
+  }
+  // 初始化动画
+  initVideoCanvas() {
+    let _this = this
+    var canvas: any = document.getElementById('webgl1')
+    var gl = canvas.getContext('webgl')
 
     var vertexShaderSource = `
     attribute vec2 pos;
@@ -144,7 +136,7 @@ export default class HelloWorld extends Vue {
     varying vec2 tx;
     varying vec4 v_color;
     void main() {
-      if( 0.5<tx.x &&tx.x<0.7 && 0.5<tx.y && tx.y<0.7 ){
+      if( 1.5<tx.x &&tx.x<0.7 && 0.5<tx.y && tx.y<0.7 ){
          vec4 sum =v_color;
         //纵向高斯模糊
         sum += texture2D( texture, vec2( tx.x, tx.y - 4.0 * v ) ) * (0.051/2.0);
@@ -223,10 +215,17 @@ export default class HelloWorld extends Vue {
     gl.activeTexture(gl.TEXTURE0)
 
     function loop() {
-      if (videoready) {
+      if (_this.videoready) {
         gl.clear(gl.COLOR_BUFFER_BIT)
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, video)
-        gl.bindBuffer(gl.ARRAY_BUFFER, v_pos)
+        gl.texImage2D(
+          gl.TEXTURE_2D,
+          0,
+          gl.RGB,
+          gl.RGB,
+          gl.UNSIGNED_BYTE,
+          _this.video
+        )
+        // gl.bindBuffer(gl.ARRAY_BUFFER, v_pos)
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, i_pos)
         //缓冲区中的数据传递pos
         gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0)
