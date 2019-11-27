@@ -281,6 +281,10 @@ body {
   margin: 0;
   padding: 0;
 }
+.handle {
+  border-radius: 50%;
+  background: #b1cde8;
+}
 .demo4 {
   .canvas-container {
     position: relative;
