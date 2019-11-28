@@ -2,14 +2,16 @@
   <div class="demo4">
     <!--canvas标签创建一个宽高均为500像素，背景为蓝色的矩形画布-->
     <div class="canvas-container">
-      <canvas id="webgl" width="500" height="300" style="background-color:#eee"></canvas>
+      <canvas id="webgl" :width="width" :height="height" style="background-color:#eee"></canvas>
       <VueDraggableResizable
-        :w="boxWidth"
-        :h="boxHeight"
+        :w="boxW"
+        :h="boxH"
+        :x="boxX"
+        :y="boxY"
         :parent="true"
         :active="true"
-        :onDragStart="onDragStart"
-        :onResizeStart="onResizeStart"
+        @activated="onActivated"
+        @deactivated="onDeactivated"
         @dragging="onDragging"
         @resizing="onResizing"
       ></VueDraggableResizable>
@@ -34,19 +36,23 @@ export default class HelloWorld extends Vue {
   video: any = null
   videoready: boolean = false
 
-  // 截图框默认宽高
-  boxHeight: number = 40
-  boxWidth: number = 90
+  // 选择框
+  boxH: number = 40 //宽高
+  boxW: number = 90
+  boxX: number = 0 //坐标
+  boxY: number = 0
+  boxOffsetX: number = 20 //距离上边框距离
+  boxOffsetY: number = 20 //距离右边框距离
 
   // canvas宽高
   height: number = 300
   width: number = 500
 
-  // 截图矿坐标范围
-  txxMin: number = 0.5
-  txxMax: number = 0.6
-  txyMin: number = 0.5
-  txyMax: number = 0.6
+  // 模糊框坐标，范围 左上点txxMin，txyMin  右下点txxMax，txyMax
+  txxMin: number = 0
+  txxMax: number = 0
+  txyMin: number = 0
+  txyMax: number = 0
 
   mounted() {
     this.initVideo()
@@ -54,33 +60,48 @@ export default class HelloWorld extends Vue {
   videoPlay() {
     this.video.play()
   }
-  onDragStart(ev: any) {
-    // console.log('onDragStart', ev)
+  onActivated() {
+    console.log('onActivated')
   }
-  onResizeStart(handle: any, ev: any) {
-    console.log('onResizeStart', handle, ev)
+  onDeactivated() {
+    console.log('onDeactivated')
   }
+  // 拖动
   onDragging(left: any, top: any) {
     console.log('onDragging', left, top)
     this.txxMin = Math.floor((left / this.width) * 1000) / 1000
     this.txyMin = Math.floor((top / this.height) * 1000) / 1000
 
-    this.txxMax =
-      Math.floor(((left + this.boxWidth) / this.width) * 1000) / 1000
-    this.txyMax =
-      Math.floor(((top + this.boxHeight) / this.height) * 1000) / 1000
+    this.txxMax = Math.floor(((left + this.boxW) / this.width) * 1000) / 1000
+    this.txyMax = Math.floor(((top + this.boxH) / this.height) * 1000) / 1000
   }
+  // 尺寸改变
   onResizing(left: any, top: any, width: any, height: any) {
     console.log('onResizing', left, top, width, height)
 
-    this.boxWidth = width
-    this.boxHeight = height
+    this.boxW = width
+    this.boxH = height
 
     this.txxMin = Math.floor((left / this.width) * 1000) / 1000
     this.txyMin = Math.floor((top / this.height) * 1000) / 1000
 
     this.txxMax = Math.floor(((left + width) / this.width) * 1000) / 1000
     this.txyMax = Math.floor(((top + height) / this.height) * 1000) / 1000
+  }
+
+  // 初始化截图框坐标范围
+  initBoxData() {
+    // 初始化右上角
+    this.txxMin = 1 - (this.boxW + this.boxOffsetX) / this.width
+    this.txyMin = this.boxOffsetY / this.height
+
+    this.boxX = this.txxMin * this.width
+    this.boxY = this.boxOffsetY
+
+    this.txxMax =
+      Math.floor(((this.boxX + this.boxW) / this.width) * 1000) / 1000
+    this.txyMax =
+      Math.floor(((this.boxOffsetY + this.boxH) / this.height) * 1000) / 1000
   }
 
   initShader(gl: any, vertexShaderSource: any, fragmentShaderSource: any): any {
@@ -93,18 +114,6 @@ export default class HelloWorld extends Vue {
     gl.compileShader(fragmentShader)
 
     return { vertexShader, fragmentShader }
-  }
-
-  // 初始化截图框坐标范围
-
-  initBoxData() {
-    this.txxMin = 0
-    this.txyMin = 0
-
-    this.txxMax =
-      Math.floor(((this.txxMin + this.boxWidth) / this.width) * 1000) / 1000
-    this.txyMax =
-      Math.floor(((this.txyMin + this.boxHeight) / this.height) * 1000) / 1000
   }
 
   initProgram(gl: any, vertexShader: any, fragmentShader: any): any {
@@ -243,7 +252,7 @@ export default class HelloWorld extends Vue {
     function loop() {
       //获取着色器
       gl.uniform1f(gl.getUniformLocation(program, 'v'), 10.0)
-      gl.uniform1f(gl.getUniformLocation(program, 'h'), 10.0)
+      gl.uniform1f(gl.getUniformLocation(program, 'h'), 0.01)
       gl.uniform1f(gl.getUniformLocation(program, 'txxMin'), _this.txxMin)
       gl.uniform1f(gl.getUniformLocation(program, 'txxMax'), _this.txxMax)
       gl.uniform1f(gl.getUniformLocation(program, 'txyMin'), _this.txyMin)
